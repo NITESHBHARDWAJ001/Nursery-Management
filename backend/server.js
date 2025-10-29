@@ -24,7 +24,28 @@ const { generateMonthlyReport } = require('./utils/reportGenerator');
 const app = express();
 
 // Middleware
-const allowedOrigin = process.env.FRONTEND_URL || process.env.REACT_APP_FRONTEND_URL || '*';
+let allowedOrigin = process.env.FRONTEND_URL || process.env.REACT_APP_FRONTEND_URL || '*';
+// normalize: remove trailing slash if present
+if (allowedOrigin !== '*') {
+  allowedOrigin = allowedOrigin.replace(/\/+$/, '');
+}
+
+// remove duplicate cors usage and use a single, strict config
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow non-browser requests like server-to-server or tools (no origin)
+    if (!origin) return callback(null, true);
+    if (allowedOrigin === '*' || origin === allowedOrigin) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS policy: Origin ${origin} not allowed`), false);
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));const allowedOrigin = process.env.FRONTEND_URL || process.env.REACT_APP_FRONTEND_URL || '*';
 app.use(cors({
   origin: allowedOrigin,
 }));
