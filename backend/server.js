@@ -24,7 +24,10 @@ const { generateMonthlyReport } = require('./utils/reportGenerator');
 const app = express();
 
 // Middleware
-app.use(cors());
+const allowedOrigin = process.env.FRONTEND_URL || process.env.REACT_APP_FRONTEND_URL || '*';
+app.use(cors({
+  origin: allowedOrigin,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
